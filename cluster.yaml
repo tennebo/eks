@@ -1,0 +1,41 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: ninja
+  version: '1.19'
+  region: us-east-1
+  tags:
+    env: test
+
+# Add a few AZs to ensure nodes can be spun up in any AZ later on
+availabilityZones: [ "us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d", "us-east-1f" ]
+
+vpc:
+  nat:
+    gateway: Single
+
+managedNodeGroups:
+  - name: ng-ninja
+    instancePrefix: ninja
+    minSize: 1
+    maxSize: 2
+    desiredCapacity: 1
+    instanceTypes: [ "m5.large", "t3.large", "t2.large", "t3.medium", "t2.medium", "r4.large" ]
+    spot: true
+    availabilityZones: [ "us-east-1d" ]
+    iam:
+      withAddonPolicies:
+        # Allow read/write to zones in Route53
+        externalDNS: true
+        # Access to ACM
+        certManager: true
+
+fargateProfiles:
+  - name: fp-compute
+    selectors:
+      # Workloads in the "compute" Kubernetes namespace will be scheduled onto Fargate
+      - namespace: compute
+    tags:
+      env: compute
+      name: fp-compute

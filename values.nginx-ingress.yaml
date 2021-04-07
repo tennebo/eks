@@ -1,0 +1,20 @@
+# Values for Helm chart
+controller:
+  # Allow ELB Alias for DNS registration w/ external-dns
+  publishService:
+    enabled: false
+  tcp:
+    configNameSpace: $(POD_NAMESPACE)/tcp-services
+  udp:
+    configNameSpace: $(POD_NAMESPACE)/udp-services
+  service:
+    # AWS Annotations for LoadBalancer with Certificate ARN
+    annotations:
+#      service.beta.kubernetes.io/aws-load-balancer-ssl-cert: <arn to certificate>
+      service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+      service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+      service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "45"
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    # TLS (https) is terminated at the ELB, so the internal endpoint is 'http'
+    targetPorts:
+      https: http
